@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   AnimatePresence,
   motion,
@@ -7,50 +7,61 @@ import {
   useTransform,
 } from "framer-motion";
 import {
-  ArrowDownRight,
+  ArrowDown,
+  ArrowRight,
   ArrowUpRight,
-  Instagram,
-  Mail,
   Menu,
-  Moon,
-  Phone,
-  Sun,
   X,
 } from "lucide-react";
-import { content } from "./data";
+
+import "./styles.css";
+
+const IMAGES = {
+  hero:
+    "https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=1800&q=90",
+
+  model:
+    "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=1400&q=90",
+
+  denim:
+    "https://images.unsplash.com/photo-1548883354-94bcfe321cbb?auto=format&fit=crop&w=1400&q=90",
+
+  detail:
+    "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=1400&q=90",
+
+  lifestyle:
+    "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=1600&q=90",
+
+  jacket:
+    "https://images.unsplash.com/photo-1523205565295-f8e91625443b?auto=format&fit=crop&w=1400&q=90",
+};
 
 const ease = [0.22, 1, 0.36, 1];
-
-const reveal = {
-  hidden: {
-    opacity: 0,
-    y: 36,
-  },
-  visible: {
-    opacity: 1,
-    y: 0,
-  },
-};
 
 function Reveal({
   children,
   delay = 0,
+  y = 45,
   className = "",
-  amount = 0.18,
+  amount = 0.2,
 }) {
   return (
     <motion.div
       className={className}
-      variants={reveal}
-      initial="hidden"
-      whileInView="visible"
+      initial={{
+        opacity: 0,
+        y,
+      }}
+      whileInView={{
+        opacity: 1,
+        y: 0,
+      }}
       viewport={{
         once: true,
         amount,
-        margin: "0px 0px -60px 0px",
       }}
       transition={{
-        duration: 0.8,
+        duration: 0.9,
         delay,
         ease,
       }}
@@ -61,1054 +72,883 @@ function Reveal({
 }
 
 function WordReveal({ children, delay = 0 }) {
-  const words = String(children).split(" ");
-
   return (
-    <span className="word-reveal" aria-label={children}>
-      {words.map((word, index) => (
-        <span className="word-mask" key={`${word}-${index}`}>
-          <motion.span
-            className="word"
-            initial={{
-              y: "110%",
-              opacity: 0,
-            }}
-            whileInView={{
-              y: "0%",
-              opacity: 1,
-            }}
-            viewport={{
-              once: true,
-              amount: 0.7,
-            }}
-            transition={{
-              duration: 0.75,
-              delay: delay + index * 0.055,
-              ease,
-            }}
-          >
-            {word}
-          </motion.span>
-        </span>
-      ))}
+    <span className="word-mask">
+      <motion.span
+        initial={{ y: "105%" }}
+        animate={{ y: 0 }}
+        transition={{
+          duration: 0.9,
+          delay,
+          ease,
+        }}
+      >
+        {children}
+      </motion.span>
     </span>
   );
 }
 
-function MagneticLink({ href, children, className = "" }) {
+function ImageReveal({ src, alt, className = "" }) {
+  return (
+    <div className={`image-reveal ${className}`}>
+      <motion.img
+        src={src}
+        alt={alt}
+        initial={{
+          scale: 1.14,
+          opacity: 0,
+        }}
+        whileInView={{
+          scale: 1,
+          opacity: 1,
+        }}
+        viewport={{
+          once: true,
+          amount: 0.15,
+        }}
+        transition={{
+          duration: 1.2,
+          ease,
+        }}
+      />
+    </div>
+  );
+}
+
+function ArrowButton({ children, dark = false }) {
   return (
     <motion.a
-      href={href}
-      className={className}
-      whileHover={{
-        x: 6,
-      }}
-      transition={{
-        duration: 0.3,
-        ease,
-      }}
+      href="#collections"
+      className={`arrow-button ${dark ? "dark" : ""}`}
+      whileHover="hover"
+      initial="rest"
     >
-      {children}
+      <span>{children}</span>
+
+      <motion.span
+        className="arrow-circle"
+        variants={{
+          rest: { x: 0 },
+          hover: { x: 5 },
+        }}
+      >
+        <ArrowRight size={18} />
+      </motion.span>
     </motion.a>
   );
 }
 
-function ImageReveal({ children, className = "", delay = 0 }) {
-  return (
-    <motion.div
-      className={`image-reveal ${className}`}
-      initial={{
-        clipPath: "inset(12% 0% 12% 0%)",
-        opacity: 0,
-      }}
-      whileInView={{
-        clipPath: "inset(0% 0% 0% 0%)",
-        opacity: 1,
-      }}
-      viewport={{
-        once: true,
-        amount: 0.2,
-      }}
-      transition={{
-        duration: 1.1,
-        delay,
-        ease,
-      }}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-function StatReveal({ value, label, note, delay = 0 }) {
-  const number = parseInt(String(value).replace(/\D/g, ""), 10);
-  const suffix = String(value).replace(/[0-9]/g, "");
-
-  const [display, setDisplay] = useState(0);
-  const ref = useRef(null);
-  const [started, setStarted] = useState(false);
-
-  useEffect(() => {
-    if (!started || Number.isNaN(number)) return;
-
-    let startTime;
-    const duration = 1100;
-
-    const animate = (time) => {
-      if (!startTime) startTime = time;
-
-      const progress = Math.min(
-        (time - startTime) / duration,
-        1
-      );
-
-      const eased =
-        1 - Math.pow(1 - progress, 3);
-
-      setDisplay(Math.round(number * eased));
-
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      }
-    };
-
-    requestAnimationFrame(animate);
-  }, [started, number]);
-
-  return (
-    <motion.div
-      ref={ref}
-      className="stat-row"
-      initial={{
-        opacity: 0,
-        y: 24,
-      }}
-      whileInView={() => {
-        setStarted(true);
-
-        return {
-          opacity: 1,
-          y: 0,
-        };
-      }}
-      viewport={{
-        once: true,
-        amount: 0.6,
-      }}
-      transition={{
-        duration: 0.75,
-        delay,
-        ease,
-      }}
-    >
-      <strong>
-        {Number.isNaN(number) ? value : `${display}${suffix}`}
-      </strong>
-
-      <div>
-        <span>{label}</span>
-        {note && <small>{note}</small>}
-      </div>
-    </motion.div>
-  );
-}
-
 export default function App() {
-  const [dark, setDark] = useState(false);
-  const [menu, setMenu] = useState(false);
-  const [activeCard, setActiveCard] = useState(0);
-  const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [activeSlide, setActiveSlide] = useState(0);
 
-  const heroRef = useRef(null);
+  const { scrollYProgress } = useScroll();
 
-  const { scrollY, scrollYProgress } = useScroll();
-
-  const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 90,
+  const progress = useSpring(scrollYProgress, {
+    stiffness: 100,
     damping: 30,
-    mass: 0.2,
+    restDelta: 0.001,
   });
 
-  const heroY = useTransform(
-    smoothProgress,
-    [0, 0.18],
+  const heroImageY = useTransform(
+    scrollYProgress,
+    [0, 0.25],
     [0, 120]
   );
 
-  const heroScale = useTransform(
-    smoothProgress,
-    [0, 0.18],
-    [1.08, 1]
-  );
-
-  const heroOpacity = useTransform(
-    smoothProgress,
-    [0, 0.15],
-    [1, 0.92]
-  );
-
-  const navY = useTransform(
-    scrollY,
-    [0, 80],
-    [0, -2]
+  const heroImageScale = useTransform(
+    scrollYProgress,
+    [0, 0.25],
+    [1, 1.08]
   );
 
   useEffect(() => {
-    document.documentElement.dataset.theme = dark
-      ? "dark"
-      : "light";
-  }, [dark]);
-
-  useEffect(() => {
-    const unsubscribe = scrollY.on("change", (latest) => {
-      setScrolled(latest > 60);
-    });
-
-    return () => unsubscribe();
-  }, [scrollY]);
-
-  useEffect(() => {
-    const onKey = (event) => {
-      if (event.key === "Escape") {
-        setMenu(false);
-      }
-    };
-
-    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = menuOpen ? "hidden" : "";
 
     return () => {
-      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
     };
-  }, []);
+  }, [menuOpen]);
 
-  const nav = useMemo(
-    () => [
-      ["Story", "#story"],
-      ["Denim", "#denim"],
-      ["Impact", "#impact"],
-      ["Contact", "#contact"],
-    ],
-    []
-  );
-
-  const denimCards = [
-    [
-      "01",
-      "Fit",
-      "Proportion-first silhouettes that move with real bodies.",
-      content.images.hero,
-    ],
-    [
-      "02",
-      "Fabric",
-      "Texture, weight and wash are treated as part of the design.",
-      content.images.denimTexture,
-    ],
-    [
-      "03",
-      "Construction",
-      "The smallest seam can change how a garment feels.",
-      content.images.seam,
-    ],
-    [
-      "04",
-      "Everyday",
-      "Premium denim should work beyond the photograph.",
-      content.images.lifestyle,
-    ],
+  const heroSlides = [
+    {
+      title: (
+        <>
+          DENIM
+          <br />
+          <span>WITH INTENT.</span>
+        </>
+      ),
+      description:
+        "Thoughtfully designed denim made around movement, individuality and everyday life.",
+      image: IMAGES.hero,
+      label: "01 / THE DENIM PIECE",
+    },
+    {
+      title: (
+        <>
+          BUILT FOR
+          <br />
+          <span>YOUR EVERYDAY.</span>
+        </>
+      ),
+      description:
+        "Comfort, character and confidence — designed into every fit.",
+      image: IMAGES.model,
+      label: "02 / EVERYDAY DENIM",
+    },
+    {
+      title: (
+        <>
+          MADE TO
+          <br />
+          <span>MOVE WITH YOU.</span>
+        </>
+      ),
+      description:
+        "From fabric selection to final stitch, every detail has a purpose.",
+      image: IMAGES.detail,
+      label: "03 / CRAFT & DETAIL",
+    },
   ];
 
+  const currentSlide = heroSlides[activeSlide];
+
   return (
-    <main>
-      {/* GLOBAL SCROLL PROGRESS */}
+    <main className="site">
+
+      {/* SCROLL PROGRESS */}
       <motion.div
         className="scroll-progress"
-        style={{
-          scaleX: smoothProgress,
-        }}
+        style={{ scaleX: progress }}
       />
 
-      {/* NAVIGATION */}
-      <motion.header
-        className={`nav-wrap ${
-          scrolled ? "nav-scrolled" : ""
-        }`}
-        style={{ y: navY }}
-      >
-        <div className="nav container">
-          <a
-            className="wordmark"
-            href="#top"
-            aria-label="Inthing home"
-          >
-            <span className="wordmark-mark">✦</span>
+      {/* HEADER */}
+      <header className="header">
+        <div className="header-inner">
 
+          <a href="#top" className="logo">
+            <span className="logo-star">✦</span>
             <span>
-              inthing<span className="dot">.</span>
+              inthing<span className="logo-dot">.</span>
             </span>
           </a>
 
-          <nav className="desktop-nav">
-            {nav.map(([label, href]) => (
-              <motion.a
-                href={href}
-                key={href}
-                whileHover={{
-                  y: -2,
-                }}
-              >
-                {label}
-              </motion.a>
-            ))}
+          <nav className="desktop-navigation">
+            <a href="#story">Story</a>
+            <a href="#collections">Collections</a>
+            <a href="#philosophy">Philosophy</a>
+            <a href="#contact">Contact</a>
           </nav>
 
-          <div className="nav-actions">
-            <button
-              className="icon-btn"
-              aria-label="Toggle colour theme"
-              onClick={() => setDark((value) => !value)}
-            >
-              <AnimatePresence mode="wait">
-                <motion.span
-                  key={dark ? "sun" : "moon"}
-                  initial={{
-                    rotate: -90,
-                    opacity: 0,
-                  }}
-                  animate={{
-                    rotate: 0,
-                    opacity: 1,
-                  }}
-                  exit={{
-                    rotate: 90,
-                    opacity: 0,
-                  }}
-                >
-                  {dark ? (
-                    <Sun size={17} />
-                  ) : (
-                    <Moon size={17} />
-                  )}
-                </motion.span>
-              </AnimatePresence>
-            </button>
+          <button
+            className="menu-trigger"
+            onClick={() => setMenuOpen(true)}
+            aria-label="Open menu"
+          >
+            <span>OPEN MENU</span>
+            <Menu size={19} />
+          </button>
 
-            <button
-              className="menu-btn"
-              aria-label="Open menu"
-              onClick={() =>
-                setMenu((value) => !value)
-              }
-            >
-              {menu ? (
-                <X size={20} />
-              ) : (
-                <Menu size={20} />
-              )}
-            </button>
-          </div>
         </div>
+      </header>
 
-        <AnimatePresence>
-          {menu && (
-            <motion.div
-              className="mobile-menu"
-              initial={{
-                height: 0,
-                opacity: 0,
-              }}
-              animate={{
-                height: "auto",
-                opacity: 1,
-              }}
-              exit={{
-                height: 0,
-                opacity: 0,
-              }}
-              transition={{
-                duration: 0.45,
-                ease,
-              }}
-            >
-              {nav.map(([label, href], index) => (
+      {/* MOBILE MENU */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            className="mobile-menu"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="mobile-menu-top">
+              <div className="logo">
+                <span className="logo-star">✦</span>
+                <span>
+                  inthing<span className="logo-dot">.</span>
+                </span>
+              </div>
+
+              <button
+                className="mobile-close"
+                onClick={() => setMenuOpen(false)}
+              >
+                <X size={25} />
+              </button>
+            </div>
+
+            <nav>
+              {[
+                ["Story", "#story"],
+                ["Collections", "#collections"],
+                ["Philosophy", "#philosophy"],
+                ["Contact", "#contact"],
+              ].map(([name, href], index) => (
                 <motion.a
-                  key={href}
+                  key={name}
                   href={href}
-                  onClick={() => setMenu(false)}
-                  initial={{
-                    opacity: 0,
-                    x: -18,
-                  }}
-                  animate={{
-                    opacity: 1,
-                    x: 0,
-                  }}
+                  onClick={() => setMenuOpen(false)}
+                  initial={{ opacity: 0, x: -40 }}
+                  animate={{ opacity: 1, x: 0 }}
                   transition={{
-                    delay: index * 0.06,
+                    delay: index * 0.08,
                     duration: 0.5,
                     ease,
                   }}
                 >
-                  {label}
+                  <span>0{index + 1}</span>
+                  {name}
+                  <ArrowUpRight size={22} />
                 </motion.a>
               ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.header>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* HERO */}
-      <section
-        id="top"
-        className="hero"
-        ref={heroRef}
-      >
-        <div className="container hero-grid">
-          <div className="hero-copy">
+      <section id="top" className="hero">
+
+        <div className="hero-noise" />
+
+        <div className="hero-grid">
+
+          {/* HERO TEXT */}
+          <div className="hero-content">
+
             <Reveal>
               <p className="eyebrow">
                 PREMIUM DENIM / INDIA
               </p>
             </Reveal>
 
-            <Reveal delay={0.08}>
-              <h1>
-                <WordReveal>Denim</WordReveal>
-                <span>
-                  <WordReveal delay={0.1}>
-                    with intent.
-                  </WordReveal>
-                </span>
-              </h1>
-            </Reveal>
+            <div className="hero-title">
+              <WordReveal>
+                {currentSlide.title}
+              </WordReveal>
+            </div>
 
-            <Reveal delay={0.18}>
-              <p className="hero-lead">
-                {content.intro}
+            <Reveal delay={0.25}>
+              <p className="hero-description">
+                {currentSlide.description}
               </p>
             </Reveal>
 
-            <Reveal delay={0.28}>
-              <motion.a
-                href="#story"
-                className="round-cta"
-                whileHover={{
-                  scale: 1.025,
-                }}
-                whileTap={{
-                  scale: 0.98,
-                }}
-              >
-                <span>Explore the story</span>
-                <motion.span
-                  className="cta-icon"
-                  whileHover={{
-                    rotate: 45,
-                  }}
-                >
-                  <ArrowDownRight size={18} />
-                </motion.span>
-              </motion.a>
+            <Reveal delay={0.35}>
+              <ArrowButton>
+                Discover Inthing
+              </ArrowButton>
             </Reveal>
+
           </div>
 
+          {/* HERO IMAGE */}
           <motion.div
-            className="hero-visual"
+            className="hero-image-area"
             style={{
-              y: heroY,
-              scale: heroScale,
-              opacity: heroOpacity,
+              y: heroImageY,
+              scale: heroImageScale,
             }}
-          >
-            <motion.div
-              className="hero-frame"
-              initial={{
-                clipPath: "inset(8% 0% 8% 0%)",
-                opacity: 0,
-              }}
-              animate={{
-                clipPath: "inset(0% 0% 0% 0%)",
-                opacity: 1,
-              }}
-              transition={{
-                duration: 1.2,
-                delay: 0.15,
-                ease,
-              }}
-            >
-              <motion.img
-                src={content.images.hero}
-                alt="Inthing denim campaign"
-                initial={{
-                  scale: 1.12,
-                }}
-                animate={{
-                  scale: 1,
-                }}
-                transition={{
-                  duration: 1.6,
-                  delay: 0.15,
-                  ease,
-                }}
-              />
-
-              <motion.div
-                className="hero-stamp"
-                initial={{
-                  scale: 0,
-                  rotate: -25,
-                  opacity: 0,
-                }}
-                animate={{
-                  scale: 1,
-                  rotate: -8,
-                  opacity: 1,
-                }}
-                transition={{
-                  duration: 0.8,
-                  delay: 0.8,
-                  ease,
-                }}
-              >
-                <span>INTHING</span>
-                <small>
-                  FIT • FABRIC • FORM
-                </small>
-              </motion.div>
-            </motion.div>
-
-            <p className="image-caption">
-              01 / THE PIECE COMES FIRST
-            </p>
-          </motion.div>
-        </div>
-
-        <div
-          className="hero-ticker"
-          aria-hidden="true"
-        >
-          <motion.div
-            className="ticker-track"
+            key={activeSlide}
+            initial={{
+              opacity: 0,
+              scale: 1.04,
+            }}
             animate={{
-              x: ["0%", "-50%"],
+              opacity: 1,
+              scale: 1,
             }}
             transition={{
-              duration: 22,
+              duration: 0.8,
+              ease,
+            }}
+          >
+
+            <div className="hero-image-frame">
+
+              <img
+                src={currentSlide.image}
+                alt="Inthing denim collection"
+              />
+
+              <div className="hero-image-overlay" />
+
+              <div className="hero-image-label">
+                <span>INTHING</span>
+                <small>DENIM / 2026</small>
+              </div>
+
+            </div>
+
+            <div className="hero-caption">
+              {currentSlide.label}
+            </div>
+
+          </motion.div>
+
+        </div>
+
+        {/* HERO CONTROLS */}
+        <div className="hero-controls">
+
+          <button
+            onClick={() =>
+              setActiveSlide(
+                activeSlide === 0
+                  ? heroSlides.length - 1
+                  : activeSlide - 1
+              )
+            }
+            aria-label="Previous slide"
+          >
+            <ArrowRight className="previous-arrow" size={22} />
+          </button>
+
+          <div className="slide-dots">
+            {heroSlides.map((_, index) => (
+              <button
+                key={index}
+                className={
+                  activeSlide === index ? "active" : ""
+                }
+                onClick={() => setActiveSlide(index)}
+                aria-label={`Slide ${index + 1}`}
+              />
+            ))}
+          </div>
+
+          <button
+            onClick={() =>
+              setActiveSlide(
+                (activeSlide + 1) % heroSlides.length
+              )
+            }
+            aria-label="Next slide"
+          >
+            <ArrowRight size={22} />
+          </button>
+
+        </div>
+
+        {/* TICKER */}
+        <div className="ticker">
+          <motion.div
+            className="ticker-track"
+            animate={{ x: ["0%", "-50%"] }}
+            transition={{
+              duration: 20,
               repeat: Infinity,
               ease: "linear",
             }}
           >
             <span>FIT</span>
             <i>✦</i>
+            <span>FABRIC</span>
+            <i>✦</i>
             <span>FORM</span>
             <i>✦</i>
-            <span>FABRIC</span>
+            <span>CRAFT</span>
             <i>✦</i>
             <span>FIT</span>
             <i>✦</i>
+            <span>FABRIC</span>
+            <i>✦</i>
             <span>FORM</span>
             <i>✦</i>
-            <span>FABRIC</span>
+            <span>CRAFT</span>
             <i>✦</i>
           </motion.div>
         </div>
+
+      </section>
+
+      {/* QUOTE */}
+      <section className="quote-section">
+
+        <div className="quote-mark">“</div>
+
+        <Reveal className="quote-inner">
+
+          <p className="section-eyebrow">
+            THE INTHING BELIEF
+          </p>
+
+          <h2>
+            Denim is not just
+            <em> what you wear.</em>
+            <br />
+            It's how you
+            <strong> move.</strong>
+          </h2>
+
+          <div className="quote-line" />
+
+          <p className="quote-small">
+            Originality. Quality. Innovation. Fit.
+          </p>
+
+        </Reveal>
+
       </section>
 
       {/* STORY */}
+      <section id="story" className="story section">
+
+        <div className="section-header">
+
+          <span>01 / OUR STORY</span>
+
+          <span>
+            FROM DENIM ROOTS
+          </span>
+
+        </div>
+
+        <div className="story-grid">
+
+          <Reveal className="story-heading">
+
+            <p className="eyebrow">
+              BUILT TO BE WORN
+            </p>
+
+            <h2>
+              FROM DENIM
+              <br />
+              ROOTS TO
+              <br />
+              <em>MODERN STYLE.</em>
+            </h2>
+
+          </Reveal>
+
+          <Reveal
+            delay={0.15}
+            className="story-copy"
+          >
+
+            <p className="large-copy">
+              We believe great denim should feel
+              effortless — confident, comfortable
+              and unmistakably yours.
+            </p>
+
+            <p>
+              Inthing brings together considered
+              proportions, expressive washes and
+              everyday functionality to create denim
+              that becomes part of your identity.
+            </p>
+
+            <a href="#collections" className="text-link">
+              Explore the collection
+              <ArrowUpRight size={17} />
+            </a>
+
+          </Reveal>
+
+        </div>
+
+        <div className="story-image-grid">
+
+          <ImageReveal
+            src={IMAGES.lifestyle}
+            alt="Inthing denim lifestyle"
+            className="story-large-image"
+          />
+
+          <Reveal className="story-side-card">
+
+            <span className="card-number">
+              01
+            </span>
+
+            <h3>
+              Designed
+              <br />
+              with purpose.
+            </h3>
+
+            <p>
+              Every silhouette starts with fit,
+              proportion and the way people
+              actually live.
+            </p>
+
+          </Reveal>
+
+        </div>
+
+      </section>
+
+      {/* COLLECTIONS */}
       <section
-        id="story"
-        className="section story"
+        id="collections"
+        className="collections section"
       >
-        <div className="container">
-          <div className="section-topline">
-            <span>01 / OUR STORY</span>
-            <span>BUILT TO BE WORN</span>
-          </div>
 
-          <div className="story-grid">
-            <Reveal>
-              <h2 className="editorial-heading">
-                Not just a pair of jeans.{" "}
-                <em>A point of view.</em>
-              </h2>
-            </Reveal>
+        <div className="section-header">
 
-            <Reveal delay={0.1}>
-              <div className="story-copy">
-                <p>{content.description}</p>
+          <span>02 / COLLECTIONS</span>
 
-                <p>
-                  Inthing's existing brand story
-                  speaks about originality, quality,
-                  innovation and fit. This redesign
-                  turns those ideas into a digital
-                  experience instead of simply
-                  placing them on a page.
-                </p>
+          <span>EXPLORE THE DENIM</span>
 
-                <MagneticLink
-                  href="#denim"
-                  className="text-link"
-                >
-                  See what we obsess over
-                  <ArrowUpRight size={16} />
-                </MagneticLink>
-              </div>
-            </Reveal>
-          </div>
+        </div>
 
-          <div className="editorial-grid">
-            <ImageReveal
-              className="editorial-large"
-            >
-              <motion.img
-                src={content.images.craft}
-                alt="Denim craftsmanship detail"
-                whileHover={{
-                  scale: 1.045,
-                }}
-                transition={{
-                  duration: 1.2,
-                  ease,
-                }}
-              />
+        <Reveal className="collections-intro">
 
-              <span>CRAFT / 01</span>
-            </ImageReveal>
+          <h2>
+            FIND YOUR
+            <br />
+            <em>EVERYDAY FIT.</em>
+          </h2>
+
+          <p>
+            Denim designed for different
+            moments, moods and movements.
+          </p>
+
+        </Reveal>
+
+        <div className="collection-grid">
+
+          {[
+            {
+              number: "01",
+              title: "STRAIGHT",
+              subtitle: "THE CLASSIC",
+              image: IMAGES.hero,
+            },
+            {
+              number: "02",
+              title: "BAGGY",
+              subtitle: "THE STATEMENT",
+              image: IMAGES.model,
+            },
+            {
+              number: "03",
+              title: "SLIM",
+              subtitle: "THE ESSENTIAL",
+              image: IMAGES.denim,
+            },
+          ].map((item, index) => (
 
             <Reveal
-              delay={0.12}
-              className="editorial-small"
+              key={item.number}
+              delay={index * 0.12}
+              className="collection-card-wrap"
             >
-              <motion.div
-                className="quote-card"
-                whileHover={{
-                  y: -5,
-                }}
-                transition={{
-                  duration: 0.4,
-                  ease,
-                }}
+
+              <motion.article
+                className="collection-card"
+                whileHover="hover"
+                initial="rest"
               >
-                <span className="quote-mark">
-                  “
-                </span>
 
-                <p>
-                  We stay forward-looking without
-                  losing the roots that made the
-                  fabric matter.
-                </p>
+                <div className="collection-image">
 
-                <small>
-                  — INTHING / BRAND BELIEF
-                </small>
-              </motion.div>
-            </Reveal>
-          </div>
-        </div>
-      </section>
+                  <motion.img
+                    src={item.image}
+                    alt={item.title}
+                    variants={{
+                      rest: {
+                        scale: 1,
+                      },
+                      hover: {
+                        scale: 1.06,
+                      },
+                    }}
+                    transition={{
+                      duration: 0.7,
+                      ease,
+                    }}
+                  />
 
-      {/* DENIM */}
-      <section
-        id="denim"
-        className="section denim-section"
-      >
-        <div className="container">
-          <div className="section-topline">
-            <span>
-              02 / THE DENIM UNIVERSE
-            </span>
-            <span>DRAG / EXPLORE</span>
-          </div>
+                  <div className="collection-overlay" />
 
-          <div className="denim-heading">
-            <Reveal>
-              <h2>
-                Details you can{" "}
-                <em>feel.</em>
-              </h2>
-            </Reveal>
+                  <span className="collection-number">
+                    {item.number}
+                  </span>
 
-            <Reveal delay={0.12}>
-              <p>
-                Move through the collection of ideas
-                behind every Inthing piece.
-              </p>
-            </Reveal>
-          </div>
-
-          <motion.div
-            className="feature-rail"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{
-              once: true,
-              amount: 0.15,
-            }}
-          >
-            {denimCards.map(
-              ([num, title, text, image], index) => (
-                <motion.article
-                  key={num}
-                  className={`feature-card ${
-                    activeCard === index
-                      ? "active"
-                      : ""
-                  }`}
-                  variants={{
-                    hidden: {
-                      opacity: 0,
-                      y: 50,
-                    },
-                    visible: {
-                      opacity: 1,
-                      y: 0,
-                    },
-                  }}
-                  transition={{
-                    duration: 0.75,
-                    delay: index * 0.12,
-                    ease,
-                  }}
-                  onMouseEnter={() =>
-                    setActiveCard(index)
-                  }
-                  whileHover={{
-                    y: -10,
-                  }}
-                >
-                  <div className="feature-image">
-                    <motion.img
-                      src={image}
-                      alt={`${title} denim story`}
-                      whileHover={{
-                        scale: 1.07,
-                      }}
-                      transition={{
-                        duration: 0.8,
-                        ease,
-                      }}
-                    />
-
-                    <motion.div
-                      className="feature-image-overlay"
-                      initial={{
+                  <motion.div
+                    className="collection-arrow"
+                    variants={{
+                      rest: {
                         opacity: 0,
-                      }}
-                      whileHover={{
+                        x: -10,
+                      },
+                      hover: {
                         opacity: 1,
-                      }}
-                    />
-                  </div>
-
-                  <div className="feature-meta">
-                    <motion.span
-                      whileHover={{
-                        x: 4,
-                      }}
-                    >
-                      {num}
-                    </motion.span>
-
-                    <h3>{title}</h3>
-                  </div>
-
-                  <p>{text}</p>
-
-                  <motion.span
-                    className="feature-arrow"
-                    whileHover={{
-                      x: 5,
-                      y: -5,
+                        x: 0,
+                      },
                     }}
                   >
-                    <ArrowUpRight size={18} />
-                  </motion.span>
-                </motion.article>
-              )
-            )}
-          </motion.div>
+                    <ArrowUpRight size={24} />
+                  </motion.div>
+
+                </div>
+
+                <div className="collection-info">
+
+                  <div>
+                    <span>
+                      {item.subtitle}
+                    </span>
+
+                    <h3>
+                      {item.title}
+                    </h3>
+                  </div>
+
+                  <ArrowRight size={20} />
+
+                </div>
+
+              </motion.article>
+
+            </Reveal>
+
+          ))}
+
         </div>
+
       </section>
 
-      {/* IMPACT */}
+      {/* EDITORIAL QUOTE + IMAGE */}
       <section
-        id="impact"
-        className="section impact"
+        id="philosophy"
+        className="editorial section"
       >
-        <div className="container">
-          <div className="section-topline">
-            <span>
-              03 / PEOPLE & IMPACT
-            </span>
-            <span>
-              THE HUMAN SIDE OF DENIM
-            </span>
-          </div>
 
-          <div className="impact-layout">
-            <div className="impact-copy">
-              <Reveal>
-                <p className="eyebrow">
-                  MADE BY PEOPLE
-                </p>
+        <div className="editorial-image">
 
-                <h2>
-                  Better clothes start with{" "}
-                  <em>better work.</em>
-                </h2>
-              </Reveal>
+          <ImageReveal
+            src={IMAGES.jacket}
+            alt="Denim fashion"
+          />
 
-              <Reveal delay={0.1}>
-                <p className="impact-text">
-                  A denim brand is a network of
-                  people — cutters, stitchers,
-                  washers, finishers, designers and
-                  families. This section makes that
-                  human layer visible rather than
-                  hiding it behind the product.
-                </p>
-              </Reveal>
-            </div>
+          <div className="editorial-circle" />
 
-            <div className="stat-stack">
-              {content.stats.map(
-                (stat, index) => (
-                  <StatReveal
-                    key={stat.label}
-                    value={stat.value}
-                    label={stat.label}
-                    note={stat.note}
-                    delay={index * 0.08}
-                  />
-                )
-              )}
-            </div>
-          </div>
         </div>
+
+        <div className="editorial-copy">
+
+          <Reveal>
+
+            <p className="eyebrow">
+              03 / THE INTHING WAY
+            </p>
+
+            <h2>
+              MAKE IT
+              <br />
+              USEFUL.
+              <br />
+              MAKE IT
+              <br />
+              <em>LAST.</em>
+            </h2>
+
+          </Reveal>
+
+          <Reveal delay={0.15}>
+
+            <p>
+              We design pieces that are meant to
+              leave the wardrobe and become part
+              of real life.
+            </p>
+
+            <ArrowButton dark>
+              Our philosophy
+            </ArrowButton>
+
+          </Reveal>
+
+        </div>
+
+      </section>
+
+      {/* DENIM DETAIL */}
+      <section className="detail-section">
+
+        <div className="detail-image">
+          <ImageReveal
+            src={IMAGES.detail}
+            alt="Denim fabric detail"
+          />
+        </div>
+
+        <div className="detail-copy">
+
+          <Reveal>
+
+            <span className="detail-number">
+              04
+            </span>
+
+            <h2>
+              DETAILS
+              <br />
+              YOU CAN
+              <br />
+              <em>FEEL.</em>
+            </h2>
+
+            <p>
+              Texture. Weight. Wash. Stitch.
+              The smallest details change how
+              denim looks and how it lives.
+            </p>
+
+          </Reveal>
+
+        </div>
+
       </section>
 
       {/* MANIFESTO */}
       <section className="manifesto">
-        <motion.div
-          className="manifesto-bg"
-          style={{
-            scale: heroScale,
-          }}
-        >
-          <motion.img
-            src={content.images.blueDenim}
+
+        <div className="manifesto-image">
+
+          <img
+            src={IMAGES.denim}
             alt=""
-            initial={{
-              scale: 1.12,
-            }}
-            whileInView={{
-              scale: 1,
-            }}
-            viewport={{
-              once: true,
-            }}
-            transition={{
-              duration: 1.6,
-              ease,
-            }}
           />
-        </motion.div>
 
-        <div className="container manifesto-content">
-          <Reveal>
-            <p className="eyebrow">
-              THE INTHING WAY
-            </p>
-          </Reveal>
+          <div className="manifesto-overlay" />
 
-          <h2 className="manifesto-heading">
-            <WordReveal>
-              Make it useful.
-            </WordReveal>
+        </div>
+
+        <Reveal className="manifesto-content">
+
+          <p className="eyebrow">
+            INTHING / DENIM
+          </p>
+
+          <h2>
+            WEAR IT.
             <br />
-
-            <WordReveal delay={0.12}>
-              Make it last.
-            </WordReveal>
+            LIVE IT.
             <br />
-
-            <em>
-              <WordReveal delay={0.24}>
-                Make it yours.
-              </WordReveal>
-            </em>
+            <em>MAKE IT YOURS.</em>
           </h2>
 
-          <Reveal delay={0.3}>
-            <motion.a
-              href="#contact"
-              className="round-cta light"
-              whileHover={{
-                scale: 1.025,
-              }}
-              whileTap={{
-                scale: 0.98,
-              }}
-            >
-              <span>
-                Start a conversation
-              </span>
+          <ArrowButton dark>
+            Discover Inthing
+          </ArrowButton>
 
-              <ArrowUpRight size={18} />
-            </motion.a>
-          </Reveal>
-        </div>
+        </Reveal>
+
       </section>
 
       {/* CONTACT */}
       <section
         id="contact"
-        className="section contact"
+        className="contact section"
       >
-        <div className="container">
-          <div className="section-topline">
-            <span>04 / CONTACT</span>
-            <span>
-              LET'S BUILD THE NEXT PIECE
-            </span>
-          </div>
 
-          <div className="contact-grid">
-            <Reveal>
-              <h2>
-                Have an idea?
-                <br />
-                <em>
-                  Let's make it wearable.
-                </em>
-              </h2>
-            </Reveal>
+        <div className="section-header">
 
-            <Reveal delay={0.1}>
-              <motion.div
-                className="contact-card"
-                initial="hidden"
-                whileInView="visible"
-                viewport={{
-                  once: true,
-                  amount: 0.3,
-                }}
-              >
-                <motion.a
-                  href={`mailto:${content.contact.email}`}
-                  variants={reveal}
-                  transition={{
-                    duration: 0.6,
-                    ease,
-                  }}
-                >
-                  <Mail size={17} />
-                  {content.contact.email}
-                </motion.a>
+          <span>05 / CONTACT</span>
 
-                <motion.a
-                  href={`tel:${content.contact.phone}`}
-                  variants={reveal}
-                  transition={{
-                    duration: 0.6,
-                    delay: 0.08,
-                    ease,
-                  }}
-                >
-                  <Phone size={17} />
-                  {content.contact.phone}
-                </motion.a>
+          <span>LET'S TALK DENIM</span>
 
-                <motion.span
-                  variants={reveal}
-                  transition={{
-                    duration: 0.6,
-                    delay: 0.16,
-                    ease,
-                  }}
-                >
-                  {content.contact.hours}
-                </motion.span>
-
-                <motion.a
-                  href="https://www.instagram.com/p/Db5JpBbvkew/?igsi=MXQ5NXZqbHBjZjI2NA=="
-                  target="_blank"
-                  rel="noreferrer"
-                  variants={reveal}
-                  transition={{
-                    duration: 0.6,
-                    delay: 0.24,
-                    ease,
-                  }}
-                >
-                  <Instagram size={17} />
-                  Instagram
-                </motion.a>
-              </motion.div>
-            </Reveal>
-          </div>
         </div>
+
+        <div className="contact-grid">
+
+          <Reveal>
+
+            <p className="eyebrow">
+              HAVE AN IDEA?
+            </p>
+
+            <h2>
+              LET'S MAKE
+              <br />
+              IT
+              <em>WEARABLE.</em>
+            </h2>
+
+          </Reveal>
+
+          <Reveal delay={0.15}>
+
+            <div className="contact-card">
+
+              <p>
+                For enquiries, collaborations
+                and business opportunities.
+              </p>
+
+              <a href="mailto:inthingjeanssales@gmail.com">
+                inthingjeanssales@gmail.com
+              </a>
+
+              <a href="tel:+919899076333">
+                +91 9899076333
+              </a>
+
+              <a
+                href="https://www.instagram.com/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Instagram
+                <ArrowUpRight size={17} />
+              </a>
+
+            </div>
+
+          </Reveal>
+
+        </div>
+
       </section>
 
       {/* FOOTER */}
       <footer>
-        <div className="container footer-grid">
-          <div>
-            <div className="wordmark footer-mark">
-              <span className="wordmark-mark">
-                ✦
-              </span>
-              inthing
-              <span className="dot">.</span>
-            </div>
 
-            <p>
-              Premium denim. Thoughtfully made.
-            </p>
-          </div>
+        <div className="footer-main">
 
-          <div className="footer-links">
-            <motion.a
-              href="https://www.inthingjeans.com/"
-              target="_blank"
-              rel="noreferrer"
-              whileHover={{ x: 4 }}
-            >
-              Current website
-            </motion.a>
+          <a href="#top" className="logo">
+            <span className="logo-star">✦</span>
+            <span>
+              inthing<span className="logo-dot">.</span>
+            </span>
+          </a>
 
-            <motion.a
-              href="https://www.instagram.com/p/Db5JpBbvkew/?igsi=MXQ5NXZqbHBjZjI2NA=="
-              target="_blank"
-              rel="noreferrer"
-              whileHover={{ x: 4 }}
-            >
-              Instagram
-            </motion.a>
+          <p>
+            Premium denim.
+            <br />
+            Thoughtfully made.
+          </p>
 
-            <motion.a
-              href="#top"
-              whileHover={{ x: 4 }}
-            >
-              Back to top ↑
-            </motion.a>
-          </div>
+          <a href="#top" className="back-top">
+            BACK TO TOP
+            <ArrowUp size={17} />
+          </a>
+
         </div>
 
-        <div className="container footer-bottom">
+        <div className="footer-bottom">
+
           <span>
-            © {new Date().getFullYear()} Inthing
+            © {new Date().getFullYear()} INTHING
           </span>
 
           <span>
-            Designed as an original Inthing
-            experience inspired by editorial
-            textile storytelling.
+            DENIM WITH INTENT.
           </span>
+
         </div>
+
       </footer>
+
     </main>
   );
 }
