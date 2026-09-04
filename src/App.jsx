@@ -73,18 +73,25 @@ export default function App() {
 
   return (
     <main>
-      <motion.div className="scroll-progress" style={{ scaleX: scrollYProgress }} />
+      <motion.div
+        className="scroll-progress"
+        style={{ scaleX: scrollYProgress }}
+      />
 
       <header className="nav-wrap">
         <div className="nav container">
           <a className="wordmark" href="#top" aria-label="Inthing home">
             <span className="wordmark-mark">✦</span>
-            <span>inthing<span className="dot">.</span></span>
+            <span>
+              inthing<span className="dot">.</span>
+            </span>
           </a>
 
           <nav className="desktop-nav">
             {nav.map(([label, href]) => (
-              <a href={href} key={href}>{label}</a>
+              <a href={href} key={href}>
+                {label}
+              </a>
             ))}
           </nav>
 
@@ -154,7 +161,10 @@ export default function App() {
             </Reveal>
           </div>
 
-          <motion.div className="hero-visual" style={{ y: heroY, scale: heroScale }}>
+          <motion.div
+            className="hero-visual"
+            style={{ y: heroY, scale: heroScale }}
+          >
             <div className="hero-frame">
               <img src={content.images.hero} alt="Inthing denim campaign" />
               <div className="hero-stamp">
@@ -168,8 +178,18 @@ export default function App() {
 
         <div className="hero-ticker" aria-hidden="true">
           <div className="ticker-track">
-            <span>FIT</span><i>✦</i><span>FORM</span><i>✦</i><span>FABRIC</span><i>✦</i>
-            <span>FIT</span><i>✦</i><span>FORM</span><i>✦</i><span>FABRIC</span><i>✦</i>
+            <span>FIT</span>
+            <i>✦</i>
+            <span>FORM</span>
+            <i>✦</i>
+            <span>FABRIC</span>
+            <i>✦</i>
+            <span>FIT</span>
+            <i>✦</i>
+            <span>FORM</span>
+            <i>✦</i>
+            <span>FABRIC</span>
+            <i>✦</i>
           </div>
         </div>
       </section>
@@ -183,16 +203,22 @@ export default function App() {
 
           <div className="story-grid">
             <Reveal>
-              <h2>Not just a pair of jeans. <em>A point of view.</em></h2>
+              <h2>
+                Not just a pair of jeans. <em>A point of view.</em>
+              </h2>
             </Reveal>
             <Reveal delay={0.1}>
               <div className="story-copy">
                 <p>{content.description}</p>
                 <p>
-                  Inthing's existing brand story speaks about originality, quality,
-                  innovation and fit. This redesign turns those ideas into a digital
-                  experience instead of simply placing them on a page.
+                  Inthing's existing brand story speaks about originality,
+                  quality, innovation and fit. This redesign turns those ideas
+                  into a digital experience instead of simply placing them on a
+                  page.
                 </p>
+                <MagneticLink href="/story" className="text-link">
+                  Read our full story <ArrowUpRight size={16} />
+                </MagneticLink>
                 <MagneticLink href="#denim" className="text-link">
                   See what we obsess over <ArrowUpRight size={16} />
                 </MagneticLink>
@@ -202,13 +228,19 @@ export default function App() {
 
           <div className="editorial-grid">
             <Reveal className="editorial-large">
-              <img src={content.images.craft} alt="Denim craftsmanship detail" />
+              <img
+                src={content.images.craft}
+                alt="Denim craftsmanship detail"
+              />
               <span>CRAFT / 01</span>
             </Reveal>
             <Reveal delay={0.12} className="editorial-small">
               <div className="quote-card">
                 <span className="quote-mark">“</span>
-                <p>We stay forward-looking without losing the roots that made the fabric matter.</p>
+                <p>
+                  We stay forward-looking without losing the roots that made the
+                  fabric matter.
+                </p>
                 <small>— INTHING / BRAND BELIEF</small>
               </div>
             </Reveal>
@@ -224,17 +256,41 @@ export default function App() {
           </div>
           <div className="denim-heading">
             <Reveal>
-              <h2>Details you can <em>feel.</em></h2>
+              <h2>
+                Details you can <em>feel.</em>
+              </h2>
             </Reveal>
-            <p>Move through the collection of ideas behind every Inthing piece.</p>
+            <p>
+              Move through the collection of ideas behind every Inthing piece.
+            </p>
           </div>
 
           <div className="feature-rail">
             {[
-              ["01", "Fit", "Proportion-first silhouettes that move with real bodies.", content.images.hero],
-              ["02", "Fabric", "Texture, weight and wash are treated as part of the design.", content.images.denimTexture],
-              ["03", "Construction", "The smallest seam can change how a garment feels.", content.images.seam],
-              ["04", "Everyday", "Premium denim should work beyond the photograph.", content.images.lifestyle]
+              [
+                "01",
+                "Fit",
+                "Proportion-first silhouettes that move with real bodies.",
+                content.images.hero,
+              ],
+              [
+                "02",
+                "Fabric",
+                "Texture, weight and wash are treated as part of the design.",
+                content.images.denimTexture,
+              ],
+              [
+                "03",
+                "Construction",
+                "The smallest seam can change how a garment feels.",
+                content.images.seam,
+              ],
+              [
+                "04",
+                "Everyday",
+                "Premium denim should work beyond the photograph.",
+                content.images.lifestyle,
+              ],
             ].map(([num, title, text, image], i) => (
               <motion.article
                 key={num}
@@ -250,7 +306,9 @@ export default function App() {
                   <h3>{title}</h3>
                 </div>
                 <p>{text}</p>
-                <span className="feature-arrow"><ArrowUpRight size={18} /></span>
+                <span className="feature-arrow">
+                  <ArrowUpRight size={18} />
+                </span>
               </motion.article>
             ))}
           </div>
@@ -268,13 +326,16 @@ export default function App() {
             <div className="impact-copy">
               <Reveal>
                 <p className="eyebrow">MADE BY PEOPLE</p>
-                <h2>Better clothes start with <em>better work.</em></h2>
+                <h2>
+                  Better clothes start with <em>better work.</em>
+                </h2>
               </Reveal>
               <Reveal delay={0.1}>
                 <p className="impact-text">
                   A denim brand is a network of people — cutters, stitchers,
                   washers, finishers, designers and families. This section makes
-                  that human layer visible rather than hiding it behind the product.
+                  that human layer visible rather than hiding it behind the
+                  product.
                 </p>
               </Reveal>
             </div>
@@ -302,7 +363,13 @@ export default function App() {
         </div>
         <div className="container manifesto-content">
           <p className="eyebrow">THE INTHING WAY</p>
-          <h2>Make it useful.<br />Make it last.<br /><em>Make it yours.</em></h2>
+          <h2>
+            Make it useful.
+            <br />
+            Make it last.
+            <br />
+            <em>Make it yours.</em>
+          </h2>
           <a href="#contact" className="round-cta light">
             <span>Start a conversation</span>
             <ArrowUpRight size={18} />
@@ -318,12 +385,22 @@ export default function App() {
           </div>
           <div className="contact-grid">
             <Reveal>
-              <h2>Have an idea?<br /><em>Let's make it wearable.</em></h2>
+              <h2>
+                Have an idea?
+                <br />
+                <em>Let's make it wearable.</em>
+              </h2>
             </Reveal>
             <Reveal delay={0.1}>
               <div className="contact-card">
-                <a href={`mailto:${content.contact.email}`}><Mail size={17} />{content.contact.email}</a>
-                <a href={`tel:${content.contact.phone}`}><Phone size={17} />{content.contact.phone}</a>
+                <a href={`mailto:${content.contact.email}`}>
+                  <Mail size={17} />
+                  {content.contact.email}
+                </a>
+                <a href={`tel:${content.contact.phone}`}>
+                  <Phone size={17} />
+                  {content.contact.phone}
+                </a>
                 <span>{content.contact.hours}</span>
                 <a
                   href="https://www.instagram.com/p/Db5JpBbvkew/?igsi=MXQ5NXZqbHBjZjI2NA=="
@@ -341,18 +418,36 @@ export default function App() {
       <footer>
         <div className="container footer-grid">
           <div>
-            <div className="wordmark footer-mark"><span className="wordmark-mark">✦</span>inthing<span className="dot">.</span></div>
+            <div className="wordmark footer-mark">
+              <span className="wordmark-mark">✦</span>inthing
+              <span className="dot">.</span>
+            </div>
             <p>Premium denim. Thoughtfully made.</p>
           </div>
           <div className="footer-links">
-            <a href="https://www.inthingjeans.com/" target="_blank" rel="noreferrer">Current website</a>
-            <a href="https://www.instagram.com/p/Db5JpBbvkew/?igsi=MXQ5NXZqbHBjZjI2NA==" target="_blank" rel="noreferrer">Instagram</a>
+            <a
+              href="https://www.inthingjeans.com/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Current website
+            </a>
+            <a
+              href="https://www.instagram.com/p/Db5JpBbvkew/?igsi=MXQ5NXZqbHBjZjI2NA=="
+              target="_blank"
+              rel="noreferrer"
+            >
+              Instagram
+            </a>
             <a href="#top">Back to top ↑</a>
           </div>
         </div>
         <div className="container footer-bottom">
           <span>© {new Date().getFullYear()} Inthing</span>
-          <span>Designed as an original Inthing experience inspired by editorial textile storytelling.</span>
+          <span>
+            Designed as an original Inthing experience inspired by editorial
+            textile storytelling.
+          </span>
         </div>
       </footer>
     </main>
