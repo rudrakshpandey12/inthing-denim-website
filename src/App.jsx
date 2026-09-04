@@ -65,6 +65,7 @@ export default function App() {
     () => [
       ["Story", "#story"],
       ["Denim", "#denim"],
+      ["Sustainability", "/sustainability"],
       ["Impact", "#impact"],
       ["Contact", "#contact"]
     ],
@@ -318,7 +319,7 @@ export default function App() {
       <section id="impact" className="section impact">
         <div className="container">
           <div className="section-topline">
-            <span>03 / PEOPLE & IMPACT</span>
+            <span>04 / PEOPLE & IMPACT</span>
             <span>THE HUMAN SIDE OF DENIM</span>
           </div>
 
@@ -356,7 +357,53 @@ export default function App() {
           </div>
         </div>
       </section>
+      <section className="section sustainability-teaser">
+        <div className="container">
+          <div className="section-topline">
+            <span>03 / SUSTAINABILITY</span>
+            <span>RETHINKING THE BLUE</span>
+          </div>
 
+          <div className="sustainability-teaser-grid">
+            <Reveal>
+              <div className="sustainability-teaser-copy">
+                <p className="eyebrow">BEING FUNDAMENTALLY</p>
+
+                <h2>
+                  Better denim
+                  <br />
+                  starts with
+                  <br />
+                  <em>better thinking.</em>
+                </h2>
+
+                <p>
+                  Producing a single pair of jeans takes 3,800 litres of water.
+                  We're rethinking the blue through 3D visualization, laser
+                  fading and ozone washing.
+                </p>
+
+                <a href="/sustainability" className="round-cta">
+                  <span>Explore sustainability</span>
+                  <ArrowUpRight size={18} />
+                </a>
+              </div>
+            </Reveal>
+
+            <Reveal delay={0.12}>
+              <a href="/sustainability" className="sustainability-teaser-image">
+                <img src={content.images.denimTexture} alt="Denim texture" />
+
+                <div className="sustainability-teaser-overlay" />
+
+                <span>
+                  3,800 L<small>water rethink</small>
+                </span>
+              </a>
+            </Reveal>
+          </div>
+        </div>
+      </section>
       <section className="manifesto">
         <div className="manifesto-bg">
           <img src={content.images.blueDenim} alt="" />
@@ -380,7 +427,7 @@ export default function App() {
       <section id="contact" className="section contact">
         <div className="container">
           <div className="section-topline">
-            <span>04 / CONTACT</span>
+            <span>05 / CONTACT</span>
             <span>LET'S BUILD THE NEXT PIECE</span>
           </div>
           <div className="contact-grid">
