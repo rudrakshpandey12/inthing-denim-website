@@ -156,7 +156,7 @@ export default function SustainabilityPage() {
 
           <div className="section-topline">
             <span>02 / SUSTAINABILITY</span>
-            <span>DENIM WITH LESS IMPACT</span>
+            <span>DENIM WITH Best IMPACT</span>
           </div>
 
           <div className="sustainability-hero-grid">

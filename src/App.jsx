@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
+
+import { AnimatePresence, motion, useScroll } from "framer-motion";
 import {
   ArrowDownRight,
+  ArrowLeft,
+  ArrowRight,
   ArrowUpRight,
   Instagram,
   Mail,
@@ -14,6 +17,41 @@ import {
 import { content } from "./data";
 
 const ease = [0.22, 1, 0.36, 1];
+
+const homeCards = [
+  {
+    number: "01",
+    category: "HERITAGE",
+    title: "ROOTED IN WHERE WE BEGAN.",
+    text: "A family-led journey shaped by decades of experience and a passion for denim.",
+    image: content.images.craft,
+    href: "/story",
+  },
+  {
+    number: "02",
+    category: "CRAFT",
+    title: "MADE WITH INTENTION.",
+    text: "From the fabric to the final fit, every detail is considered with purpose.",
+    image: content.images.denimTexture,
+    href: "#denim",
+  },
+  {
+    number: "03",
+    category: "DENIM",
+    title: "DESIGNED FOR REAL LIFE.",
+    text: "Modern fits, considered details and effortless comfort — denim made to move with you.",
+    image: content.images.lifestyle,
+    href: "#denim",
+  },
+  {
+    number: "04",
+    category: "FUTURE",
+    title: "TRADITION THAT MOVES FORWARD.",
+    text: "Honouring our roots while continuously evolving denim for what's next.",
+    image: content.images.blueDenim,
+    href: "/sustainability",
+  },
+];
 
 function Reveal({ children, delay = 0, className = "" }) {
   return (
@@ -46,20 +84,43 @@ export default function App() {
   const [dark, setDark] = useState(false);
   const [menu, setMenu] = useState(false);
   const [activeCard, setActiveCard] = useState(0);
-  const heroRef = useRef(null);
+  const [homeActiveCard, setHomeActiveCard] = useState(0);
+  const [isMobileHome, setIsMobileHome] = useState(false);
+  const [isHomeTouching, setIsHomeTouching] = useState(false);
+
+  const homeTouchStartX = useRef(0);
+  const homeTouchStartY = useRef(0);
+  
   const { scrollYProgress } = useScroll();
-  const heroY = useTransform(scrollYProgress, [0, 0.22], [0, 150]);
-  const heroScale = useTransform(scrollYProgress, [0, 0.2], [1, 1.08]);
+ 
 
   useEffect(() => {
     document.documentElement.dataset.theme = dark ? "dark" : "light";
   }, [dark]);
 
   useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 560px)");
+
+    const updateMobileState = () => {
+      setIsMobileHome(mediaQuery.matches);
+    };
+
+    updateMobileState();
+
+    mediaQuery.addEventListener("change", updateMobileState);
+
+    return () => {
+      mediaQuery.removeEventListener("change", updateMobileState);
+    };
+  }, []);
+
+  useEffect(() => {
     const onKey = (e) => e.key === "Escape" && setMenu(false);
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+
+  
 
   const nav = useMemo(
     () => [
@@ -71,6 +132,63 @@ export default function App() {
     ],
     []
   );
+
+  const nextHomeCard = () => {
+    setHomeActiveCard((current) => (current + 1) % homeCards.length);
+  };
+
+  const previousHomeCard = () => {
+    setHomeActiveCard(
+      (current) => (current - 1 + homeCards.length) % homeCards.length,
+    );
+  };
+
+  const goToHomeCard = (index) => {
+    setHomeActiveCard(index);
+  };
+
+  useEffect(() => {
+    if (isHomeTouching) {
+      return undefined;
+    }
+
+    const timer = window.setInterval(() => {
+      setHomeActiveCard((current) => (current + 1) % homeCards.length);
+    }, 4500);
+
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [isHomeTouching]);
+
+  const handleHomeTouchStart = (event) => {
+    homeTouchStartX.current = event.touches[0].clientX;
+    homeTouchStartY.current = event.touches[0].clientY;
+
+    setIsHomeTouching(true);
+  };
+
+  const handleHomeTouchEnd = (event) => {
+    const endX = event.changedTouches[0].clientX;
+    const endY = event.changedTouches[0].clientY;
+
+    const deltaX = endX - homeTouchStartX.current;
+    const deltaY = endY - homeTouchStartY.current;
+
+    setIsHomeTouching(false);
+
+    if (Math.abs(deltaX) < 50) return;
+
+    if (Math.abs(deltaX) < Math.abs(deltaY)) {
+      return;
+    }
+
+    if (deltaX < 0) {
+      nextHomeCard();
+    } else {
+      previousHomeCard();
+    }
+  };
 
   return (
     <main>
@@ -139,58 +257,282 @@ export default function App() {
         </AnimatePresence>
       </header>
 
-      <section id="top" className="hero" ref={heroRef}>
-        <div className="container hero-grid">
-          <div className="hero-copy">
-            <Reveal>
-              <p className="eyebrow">PREMIUM DENIM / INDIA</p>
-            </Reveal>
-            <Reveal delay={0.08}>
-              <h1>
-                Denim
-                <span>with intent.</span>
-              </h1>
-            </Reveal>
-            <Reveal delay={0.16}>
-              <p className="hero-lead">{content.intro}</p>
-            </Reveal>
-            <Reveal delay={0.24}>
-              <a href="#story" className="round-cta">
-                <span>Explore the story</span>
-                <ArrowDownRight size={18} />
-              </a>
-            </Reveal>
-          </div>
+      {/* =====================================================
+    NEW HOME HERO
+    ===================================================== */}
 
-          <motion.div
-            className="hero-visual"
-            style={{ y: heroY, scale: heroScale }}
-          >
-            <div className="hero-frame">
-              <img src={content.images.hero} alt="Inthing denim campaign" />
-              <div className="hero-stamp">
-                <span>INTHING</span>
-                <small>FIT • FABRIC • FORM</small>
+      <section id="top" className="home-intro">
+        <div className="container">
+          <div className="home-intro-grid">
+            {/* =========================
+          LEFT — HERO CONTENT
+          ========================= */}
+            <div className="home-intro-copy">
+              <Reveal>
+                <p className="home-intro-kicker">PREMIUM DENIM / INDIA</p>
+              </Reveal>
+
+              <Reveal delay={0.08}>
+                <h1 className="home-intro-title">
+                  Denim
+                  <span>with</span>
+                  <span>intent.</span>
+                </h1>
+              </Reveal>
+
+              <Reveal delay={0.16}>
+                <p className="home-intro-description">{content.intro}</p>
+              </Reveal>
+
+              <Reveal delay={0.22}>
+                <div className="home-intro-meta">
+                  <div className="home-intro-meta-label">
+                    <strong>01 / THE PIECE COMES FIRST</strong>
+                    FIT • FABRIC • FORM
+                  </div>
+
+                  <a href="#story" className="home-intro-cta">
+                    <span>Explore the story</span>
+                    <ArrowDownRight size={17} />
+                  </a>
+                </div>
+              </Reveal>
+            </div>
+
+            {/* =========================
+          RIGHT — FEATURE SLIDER
+          ========================= */}
+            <div className="home-feature-area">
+              {/* DESKTOP / TABLET */}
+              <div className="home-feature-desktop">
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.article
+                    key={homeCards[homeActiveCard].number}
+                    className="home-feature-big-card"
+                    initial={{
+                      opacity: 0,
+                      x: 45,
+                      scale: 0.985,
+                    }}
+                    animate={{
+                      opacity: 1,
+                      x: 0,
+                      scale: 1,
+                    }}
+                    exit={{
+                      opacity: 0,
+                      x: -45,
+                      scale: 0.985,
+                    }}
+                    transition={{
+                      duration: 0.55,
+                      ease,
+                    }}
+                    onTouchStart={handleHomeTouchStart}
+                    onTouchEnd={handleHomeTouchEnd}
+                    onTouchCancel={() => setIsHomeTouching(false)}
+                  >
+                    {/* IMAGE */}
+                    <div className="home-feature-card-image">
+                      <img
+                        src={homeCards[homeActiveCard].image}
+                        alt={homeCards[homeActiveCard].title}
+                        draggable="false"
+                      />
+                    </div>
+
+                    {/* DARK GRADIENT */}
+                    <div className="home-feature-card-overlay" />
+
+                    {/* TOP INFORMATION */}
+                    <div className="home-feature-card-top">
+                      <span className="home-feature-card-number">
+                        {homeCards[homeActiveCard].number}
+                      </span>
+
+                      <span className="home-feature-card-category">
+                        {homeCards[homeActiveCard].category}
+                      </span>
+                    </div>
+
+                    {/* CONTENT */}
+                    <div className="home-feature-card-content">
+                      <h3>{homeCards[homeActiveCard].title}</h3>
+
+                      <p>{homeCards[homeActiveCard].text}</p>
+                    </div>
+
+                    {/* CARD ARROW */}
+                    <a
+                      href={homeCards[homeActiveCard].href}
+                      className="home-feature-card-arrow"
+                      aria-label={`Explore ${homeCards[homeActiveCard].category}`}
+                    >
+                      <ArrowUpRight size={20} />
+                    </a>
+                  </motion.article>
+                </AnimatePresence>
+
+                {/* =========================
+              SLIDER CONTROLS
+              ========================= */}
+                <div className="home-feature-desktop-controls">
+                  <div className="home-feature-desktop-counter">
+                    <strong>
+                      {String(homeActiveCard + 1).padStart(2, "0")}
+                    </strong>
+
+                    <span>/ 04</span>
+                  </div>
+
+                  <div className="home-feature-desktop-dots">
+                    {homeCards.map((card, index) => (
+                      <button
+                        key={card.number}
+                        type="button"
+                        className={homeActiveCard === index ? "is-active" : ""}
+                        onClick={() => goToHomeCard(index)}
+                        aria-label={`Go to card ${index + 1}`}
+                        aria-current={
+                          homeActiveCard === index ? "true" : undefined
+                        }
+                      />
+                    ))}
+                  </div>
+
+                  <div className="home-feature-desktop-arrows">
+                    <button
+                      type="button"
+                      onClick={previousHomeCard}
+                      aria-label="Previous feature"
+                    >
+                      <ArrowLeft size={18} />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={nextHomeCard}
+                      aria-label="Next feature"
+                    >
+                      <ArrowRight size={18} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* =========================
+            MOBILE
+            ========================= */}
+              <div
+                className="home-feature-mobile"
+                onTouchStart={handleHomeTouchStart}
+                onTouchEnd={handleHomeTouchEnd}
+                onTouchCancel={() => setIsHomeTouching(false)}
+              >
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.article
+                    key={homeCards[homeActiveCard].number}
+                    className="home-feature-mobile-card"
+                    initial={{
+                      opacity: 0,
+                      x: 45,
+                    }}
+                    animate={{
+                      opacity: 1,
+                      x: 0,
+                    }}
+                    exit={{
+                      opacity: 0,
+                      x: -45,
+                    }}
+                    transition={{
+                      duration: 0.42,
+                      ease,
+                    }}
+                  >
+                    <div className="home-feature-card-image">
+                      <img
+                        src={homeCards[homeActiveCard].image}
+                        alt={homeCards[homeActiveCard].title}
+                        draggable="false"
+                      />
+                    </div>
+
+                    <div className="home-feature-card-overlay" />
+
+                    <div className="home-feature-card-top">
+                      <span className="home-feature-card-number">
+                        {homeCards[homeActiveCard].number}
+                      </span>
+
+                      <span className="home-feature-card-category">
+                        {homeCards[homeActiveCard].category}
+                      </span>
+                    </div>
+
+                    <div className="home-feature-card-content">
+                      <h3>{homeCards[homeActiveCard].title}</h3>
+
+                      <p>{homeCards[homeActiveCard].text}</p>
+                    </div>
+
+                    <a
+                      href={homeCards[homeActiveCard].href}
+                      className="home-feature-card-arrow"
+                      aria-label={`Explore ${homeCards[homeActiveCard].category}`}
+                    >
+                      <ArrowUpRight size={18} />
+                    </a>
+                  </motion.article>
+                </AnimatePresence>
+
+                <div className="home-feature-mobile-controls">
+                  <div className="home-feature-mobile-arrows">
+                    <button
+                      type="button"
+                      onClick={previousHomeCard}
+                      aria-label="Previous card"
+                    >
+                      <ArrowLeft size={17} />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={nextHomeCard}
+                      aria-label="Next card"
+                    >
+                      <ArrowRight size={17} />
+                    </button>
+                  </div>
+
+                  <div className="home-feature-dots">
+                    {homeCards.map((card, index) => (
+                      <button
+                        key={card.number}
+                        type="button"
+                        className={`home-feature-dot ${
+                          homeActiveCard === index ? "is-active" : ""
+                        }`}
+                        onClick={() => goToHomeCard(index)}
+                        aria-label={`Go to card ${index + 1}`}
+                        aria-current={
+                          homeActiveCard === index ? "true" : undefined
+                        }
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="home-feature-mobile-label">
+                  <span>Swipe to explore</span>
+
+                  <span>
+                    {String(homeActiveCard + 1).padStart(2, "0")}
+                    {" / 04"}
+                  </span>
+                </div>
               </div>
             </div>
-            <p className="image-caption">01 / THE PIECE COMES FIRST</p>
-          </motion.div>
-        </div>
-
-        <div className="hero-ticker" aria-hidden="true">
-          <div className="ticker-track">
-            <span>FIT</span>
-            <i>✦</i>
-            <span>FORM</span>
-            <i>✦</i>
-            <span>FABRIC</span>
-            <i>✦</i>
-            <span>FIT</span>
-            <i>✦</i>
-            <span>FORM</span>
-            <i>✦</i>
-            <span>FABRIC</span>
-            <i>✦</i>
           </div>
         </div>
       </section>
