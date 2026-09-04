@@ -1,4 +1,5 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
 
 const timeline = [
   {
@@ -43,6 +44,198 @@ function StoryReveal({ children, delay = 0, className = "" }) {
   );
 }
 
+function StoryTimelineCarousel() {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const total = timeline.length;
+
+  const goNext = () => {
+    setActiveIndex((current) => (current + 1) % total);
+  };
+
+  const goPrevious = () => {
+    setActiveIndex((current) => (current - 1 + total) % total);
+  };
+
+  const getPosition = (index) => {
+    const difference = index - activeIndex;
+
+    if (difference === 0) return "active";
+
+    if (difference === 1 || difference === -(total - 1)) {
+      return "next";
+    }
+
+    if (difference === -1 || difference === total - 1) {
+      return "previous";
+    }
+
+    return "hidden";
+  };
+
+  return (
+    <div className="story-timeline-carousel">
+
+      <div className="story-timeline-stack">
+        {timeline.map((item, index) => {
+          const position = getPosition(index);
+          const isDark = index % 2 === 1;
+
+          return (
+            <motion.div
+              key={item.label}
+              className={`story-timeline-slide ${position} ${
+                isDark ? "timeline-card-dark" : "timeline-card-light"
+              }`}
+              onClick={() => {
+                if (position === "next") {
+                  goNext();
+                }
+
+                if (position === "previous") {
+                  goPrevious();
+                }
+              }}
+              drag={position === "active" ? "x" : false}
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.7}
+              onDragEnd={(event, info) => {
+                if (info.offset.x < -60) {
+                  goNext();
+                }
+
+                if (info.offset.x > 60) {
+                  goPrevious();
+                }
+              }}
+              animate={{
+                x:
+                  position === "active"
+                    ? 0
+                    : position === "next"
+                      ? 42
+                      : position === "previous"
+                        ? -42
+                        : 0,
+
+                y:
+                  position === "active"
+                    ? 0
+                    : position === "next"
+                      ? 18
+                      : position === "previous"
+                        ? 18
+                        : 25,
+
+                scale:
+                  position === "active"
+                    ? 1
+                    : position === "next" || position === "previous"
+                      ? 0.94
+                      : 0.88,
+
+                opacity:
+                  position === "active"
+                    ? 1
+                    : position === "next" || position === "previous"
+                      ? 0.45
+                      : 0,
+
+                rotate:
+                  position === "next"
+                    ? 1.2
+                    : position === "previous"
+                      ? -1.2
+                      : 0,
+              }}
+              transition={{
+                duration: 0.45,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              style={{
+                zIndex:
+                  position === "active"
+                    ? 3
+                    : position === "next" || position === "previous"
+                      ? 2
+                      : 1,
+              }}
+            >
+              <div className="story-timeline-card">
+
+                <div className="story-timeline-card-top">
+                  <span className="story-timeline-number">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+
+                  <span className="story-timeline-label">
+                    {item.label}
+                  </span>
+                </div>
+
+                <div className="story-timeline-card-content">
+                  <h2>{item.title}</h2>
+
+                  <p>{item.text}</p>
+                </div>
+
+                <div className="story-timeline-card-footer">
+                  <span>
+                    {String(index + 1).padStart(2, "0")} /{" "}
+                    {String(total).padStart(2, "0")}
+                  </span>
+
+                  <span className="story-timeline-swipe-hint">
+                    Swipe
+                  </span>
+                </div>
+
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      <div className="story-timeline-controls">
+
+        <button
+          type="button"
+          className="story-timeline-control"
+          onClick={goPrevious}
+          aria-label="Previous story"
+        >
+          ←
+        </button>
+
+        <div className="story-timeline-progress">
+          {timeline.map((_, index) => (
+            <button
+              key={index}
+              type="button"
+              className={`story-timeline-progress-dot ${
+                index === activeIndex ? "active" : ""
+              }`}
+              onClick={() => setActiveIndex(index)}
+              aria-label={`Go to story ${index + 1}`}
+            />
+          ))}
+        </div>
+
+        <button
+          type="button"
+          className="story-timeline-control"
+          onClick={goNext}
+          aria-label="Next story"
+        >
+          →
+        </button>
+
+      </div>
+
+    </div>
+  );
+}
+
 export default function StoryPage() {
   return (
     <main className="story-page">
@@ -66,8 +259,6 @@ export default function StoryPage() {
           <h1>
             One Family
             <br />
-            
-            
             <em>Generations of ambitions</em>
           </h1>
 
@@ -78,22 +269,7 @@ export default function StoryPage() {
           </p>
         </StoryReveal>
 
-        <div className="story-timeline">
-          {timeline.map((item, index) => (
-            <StoryReveal
-              key={item.label}
-              delay={index * 0.08}
-              className="story-timeline-row"
-            >
-              <p className="story-timeline-label">{item.label}</p>
-
-              <div>
-                <h2>{item.title}</h2>
-                <p>{item.text}</p>
-              </div>
-            </StoryReveal>
-          ))}
-        </div>
+        <StoryTimelineCarousel />
       </section>
 
       <section className="story-origin section">
